@@ -42,15 +42,18 @@ export const contactsPage = query({
   args: {
     startIndexKey: v.optional(v.array(v.any())),
     endIndexKey: v.optional(v.array(v.any())),
+    startInclusive: v.optional(v.boolean()),
+    endInclusive: v.optional(v.boolean()),
+    order: v.optional(v.union(v.literal("asc"), v.literal("desc"))),
   },
   handler: async (ctx, args) => {
+    console.log(`getPage ${JSON.stringify(args)}`);
     return await getPage(ctx, {
       table: "contacts",
       index: "name",
       schema,
       targetMaxRows: 10,
-      startIndexKey: args.startIndexKey,
-      endIndexKey: args.endIndexKey,
+      ...args,
     });
   },
 });
