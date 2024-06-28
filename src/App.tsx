@@ -170,18 +170,15 @@ function ScrollingContacts({clickedLetter}: {clickedLetter?: string}) {
     scrollToLetter,
   } = usePaginatedContacts();
 
-  /*
   const scrollRef = useRef<HTMLDivElement>(null);
-  const emptyContacts = contacts.length === 0;
   useEffect(() => {
-    // Set the initial scrollTop to 10 on component mount
-    if (scrollRef.current) {
-      console.log(`scrolling down a little (emptyContacts is ${emptyContacts}), scrollRef ${scrollRef.current.scrollHeight}`);
-      scrollRef.current.scrollTop = 10;
-      console.log(`scrolling down a little scrollTop is ${scrollRef.current.scrollTop}`);
+    // Set the initial scrollTop to 10 if it's too low.
+    // This ensures that when we "scrollUp", the items are inserted above
+    // the current viewport, instead of shifting everything down.
+    if (scrollRef.current && scrollRef.current.scrollTop < 60) {
+      scrollRef.current.scrollTo(0, 60);
     }
-  }, [scrollRef, emptyContacts]);
-  */
+  }, [scrollRef, contacts]);
 
   const loader = useRef(null);
   // When the last contact is on screen, scrollDown
@@ -203,7 +200,6 @@ function ScrollingContacts({clickedLetter}: {clickedLetter?: string}) {
   }, [loader, loaderIndex, scrollDown]);
   
   // When the first contact is on screen, scrollUp
-  /*
   const firstContactId = contacts[0]?._id ?? null;
   const upLoader = useRef(null);
   useEffect(() => {
@@ -221,7 +217,6 @@ function ScrollingContacts({clickedLetter}: {clickedLetter?: string}) {
     }
     return () => observer.disconnect();
   }, [upLoader, scrollUp, firstContactId]);
-  */
 
   const [prevActiveLetter, setPrevActiveLetter] = useState<string | undefined>(undefined);
   useEffect(() => {
@@ -233,10 +228,8 @@ function ScrollingContacts({clickedLetter}: {clickedLetter?: string}) {
   return (
     <div
       className="max-h-[100vh] overflow-y-auto flex flex-col flex-grow p-1"
+      ref={scrollRef}
     >
-      <div className="absolute top-0 right-20">
-        <Button onClick={scrollUp}>Scroll up</Button>
-      </div>
       {contacts.map((contact, i) => {
         if (!contact) {
           return <div key={i} className="bg-gray-800 rounded-lg p-4 m-1">Loading...</div>;
@@ -244,7 +237,7 @@ function ScrollingContacts({clickedLetter}: {clickedLetter?: string}) {
         return <ContactCard
           key={contact._id}
           contact={contact}
-          ref={i === loaderIndex ? loader : null}
+          ref={i === 0 ? upLoader : i === loaderIndex ? loader : null}
         />;
       })}
     </div>
